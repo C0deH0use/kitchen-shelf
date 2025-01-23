@@ -7,6 +7,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -64,7 +66,7 @@ class ShelfResourceTest {
 
                     .then()
                     .log().ifValidationFails()
-                    .status(HttpStatus.OK)
+                    .status(OK)
                     .body("$", Matchers.hasSize(2))
                     .body("$.menuItemName", notNullValue())
                     .body("$.menuItemId", notNullValue())
@@ -92,7 +94,7 @@ class ShelfResourceTest {
 
                     .then()
                     .log().ifValidationFails()
-                    .status(HttpStatus.OK)
+                    .status(OK)
                     .body("menuItemName", notNullValue())
                     .body("menuItemId", notNullValue())
                     .body("quantity", notNullValue())
@@ -164,7 +166,7 @@ class ShelfResourceTest {
 
                     .then()
                     .log().ifValidationFails()
-                    .status(HttpStatus.OK)
+                    .status(OK)
                     .body("menuItemName", equalTo("Updated Item"))
                     .body("menuItemId", equalTo(MENU_ITEM_ID))
                     .body("quantity", equalTo(10))
@@ -299,7 +301,7 @@ class ShelfResourceTest {
 
                     .then()
                     .log().ifValidationFails()
-                    .status(HttpStatus.OK)
+                    .status(CREATED)
                     .body("menuItemName", equalTo("New Item"))
                     .body("menuItemId", equalTo(1))
                     .body("quantity", equalTo(5))

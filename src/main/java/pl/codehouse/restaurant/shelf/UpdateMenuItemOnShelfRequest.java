@@ -9,16 +9,7 @@ import jakarta.validation.constraints.NotNull;
  * This record encapsulates the update type and quantity for the operation.
  */
 public record UpdateMenuItemOnShelfRequest(
-        /**
-         * The type of update operation to perform.
-         * Must not be null.
-         */
         @JsonProperty("updateType") @NotNull UpdateType updateType,
-
-        /**
-         * The quantity to update.
-         * Must be a positive integer (minimum value of 1).
-         */
         @JsonProperty("quantity") @Min(1) int quantity
 ) {
 }

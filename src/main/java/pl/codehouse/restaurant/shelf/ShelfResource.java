@@ -23,11 +23,19 @@ import reactor.core.publisher.Mono;
  * This class handles HTTP requests related to shelf items, including fetching, updating, and adding items.
  */
 @RestController
-@RequestMapping(value = "/shelf", consumes = {MediaType.APPLICATION_JSON_VALUE, APPLICATION_PROBLEM_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE, APPLICATION_PROBLEM_JSON_VALUE})
+@RequestMapping(value = "/shelf",
+        consumes = {MediaType.APPLICATION_JSON_VALUE, APPLICATION_PROBLEM_JSON_VALUE},
+        produces = {MediaType.APPLICATION_JSON_VALUE, APPLICATION_PROBLEM_JSON_VALUE})
 class ShelfResource {
     private final ShelfQueryService queryService;
     private final ShelfService shelfService;
 
+    /**
+     * Constructs a new ShelfResource with the given services.
+     *
+     * @param queryService The service for querying shelf items.
+     * @param shelfService The service for performing actions on shelf items.
+     */
     ShelfResource(ShelfQueryService queryService, ShelfService shelfService) {
         this.queryService = queryService;
         this.shelfService = shelfService;
