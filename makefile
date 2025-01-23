@@ -1,16 +1,19 @@
-.PHONY: build run run-dependencies run-db destroy
+.PHONY: build run run-kafka run-monitoring run-all destroy
 
 build:
-	docker compose build shelf_api
+	docker compose build worker
 
 run: build
-	docker compose up shelf_api
+	docker compose --profile worker up
 
-run-dependencies:
-	docker compose --profile dependencies up --force-recreate --renew-anon-volumes
+run-kafka:
+	docker compose --profile kafka up --force-recreate --renew-anon-volumes
 
-run-db:
-	docker compose --profile db up --force-recreate --renew-anon-volumes
+run-monitoring:
+	docker compose --profile monitoring up --force-recreate --renew-anon-volumes
+
+run-all:
+	docker compose --profile all up --force-recreate --renew-anon-volumes
 
 destroy:
 	docker compose down -v

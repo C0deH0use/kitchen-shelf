@@ -26,5 +26,6 @@ replay_pid*
 /.aider.tags.cache.v3/
 /.aider.chat.history.md
 /.aider.input.history
+.aider*
 /build/
 !/gradle/wrapper/gradle-wrapper.jar

@@ -1,28 +1,18 @@
 version: "3.8"
 
-name: kitchen-shelf-services
+name: kitchen-workers
 
 services:
-  shelf_api:
+  worker:
     build: .
     ports:
       - "8080:8080"
     depends_on:
-      - shelf_db
       - broker_one
       - broker_two
-
-  shelf_db:
-    image: postgres:latest
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: db_password
-      POSTGRES_DB: shelf_db
     profiles:
-      - db
-      - dependencies
+      - worker
+      - all
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.8.0
@@ -32,9 +22,11 @@ services:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_TICK_TIME: 5000
     profiles:
-      - dependencies
+      - kafka
+      - worker
+      - all
 
   broker_one:
     image: confluentinc/cp-server:7.8.0
@@ -65,7 +57,9 @@ services:
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     profiles:
-      - dependencies
+      - kafka
+      - worker
+      - all
 
   broker_two:
     image: confluentinc/cp-server:7.8.0
@@ -97,7 +91,9 @@ services:
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     profiles:
-      - dependencies
+      - kafka
+      - worker
+      - all
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.8.0
@@ -113,7 +109,9 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker_one:29092'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
     profiles:
-      - dependencies
+      - kafka
+      - worker
+      - all
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:7.8.0
@@ -137,7 +135,8 @@ services:
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
     profiles:
-      - dependencies
+      - monitoring
+      - all
 
   ksqldb-server:
     image: confluentinc/cp-ksqldb-server:7.8.0
@@ -161,7 +160,8 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
     profiles:
-      - dependencies
+      - monitoring
+      - all
 
   ksqldb-cli:
     image: confluentinc/cp-ksqldb-cli:7.8.0
@@ -173,4 +173,30 @@ services:
     entrypoint: /bin/sh
     tty: true
     profiles:
-      - dependencies
+      - monitoring
+      - all
+
+  ksql-datagen:
+    image: confluentinc/ksqldb-examples:7.8.0
+    hostname: ksql-datagen
+    container_name: ksql-datagen
+    depends_on:
+      - ksqldb-server
+      - broker_one
+      - broker_two
+      - schema-registry
+    command: "bash -c 'echo Waiting for Kafka to be ready... && \
+                       cub kafka-ready -b broker:29092 1 40 && \
+                       echo Waiting for Confluent Schema Registry to be ready... && \
+                       cub sr-ready schema-registry 8081 40 && \
+                       echo Waiting a few seconds for topic creation to finish... && \
+                       sleep 11 && \
+                       tail -f /dev/null'"
+    environment:
+      KSQL_CONFIG_DIR: "/etc/ksql"
+      STREAMS_BOOTSTRAP_SERVERS: broker_one:29092
+      STREAMS_SCHEMA_REGISTRY_HOST: schema-registry
+      STREAMS_SCHEMA_REGISTRY_PORT: 8081
+    profiles:
+      - monitoring
+      - all

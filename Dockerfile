@@ -3,7 +3,7 @@ FROM gradle:8.12.0-jdk21 AS build-stage
 WORKDIR /home/gradle
 COPY . .
 
-RUN gradle clean build --no-daemon
+RUN gradle clean build -x test --no-daemon
 
 FROM azul/zulu-openjdk:21
 

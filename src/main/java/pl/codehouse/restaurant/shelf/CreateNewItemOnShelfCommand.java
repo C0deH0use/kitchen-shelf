@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 @Component
 class CreateNewItemOnShelfCommand implements Command<ShelfAction, ShelfDto> {
     private static final Logger log = LoggerFactory.getLogger(CreateNewItemOnShelfCommand.class);
+    private static final int NEW_VERSION = 1;
 
     private final Clock clock;
     private final ShelfRepository repository;
@@ -25,7 +26,7 @@ class CreateNewItemOnShelfCommand implements Command<ShelfAction, ShelfDto> {
 
     @Override
     public boolean isApplicable(ShelfAction t) {
-        return t instanceof UpdateItemOnShelfAction;
+        return t instanceof CreateNewItemOnShelfAction;
     }
 
     @Override
@@ -58,10 +59,9 @@ class CreateNewItemOnShelfCommand implements Command<ShelfAction, ShelfDto> {
         var menuItemId = input.menuItemId();
         var menuItemName = input.menuItemName();
         var newQuantity = input.quantity();
-        var newVersion = 0;
         var updateAt = LocalDateTime.now(clock);
 
         log.info("Performing `Create` Action on entity: {} >>> Adding {} items", menuItemId, newQuantity);
-        return new ShelfEntity(0, menuItemName, menuItemId, newQuantity, newVersion, updateAt);
+        return new ShelfEntity(0, menuItemName, menuItemId, newQuantity, NEW_VERSION, updateAt);
     }
 }

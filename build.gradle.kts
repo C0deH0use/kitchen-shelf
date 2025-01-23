@@ -86,6 +86,11 @@ testing {
                 implementation("io.cucumber:cucumber-spring:$cucumberVersion")
                 implementation("io.cucumber:cucumber-junit-platform-engine:$cucumberVersion")
 
+				implementation("io.rest-assured:rest-assured:5.4.0")
+				implementation("io.rest-assured:json-path:5.4.0")
+				implementation("io.rest-assured:json-schema-validator:5.4.0")
+				implementation("io.rest-assured:spring-web-test-client:5.4.0")
+
                 runtimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
             }
         }

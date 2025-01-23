@@ -11,6 +11,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 import pl.codehouse.restaurant.Command;
 import pl.codehouse.restaurant.ExecutionResult;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -37,6 +38,7 @@ class UpdateItemOnShelfCommand implements Command<ShelfAction, ShelfDto> {
     public Mono<ExecutionResult<ShelfDto>> execute(ShelfAction context) {
         var input = (UpdateItemOnShelfAction) context;
         return repository.findByMenuItemId(input.menuItemId())
+                .switchIfEmpty(Mono.error(new IllegalStateException("Missing Menu item by id %s on shelf".formatted(input.menuItemId()))))
                 .flatMap(validateMenuItemExists(input))
                 .map(entity -> performAction(entity, input))
                 .doOnNext(entity -> log.info("Storing entity after Action >>> {}", entity))

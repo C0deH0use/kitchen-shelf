@@ -29,6 +29,7 @@ class CreateNewItemOnShelfCommandTest {
 
     private static final int MENU_ITEM_ID_ONE = 1000;
     private static final String MENU_ITEM_NAME_ONE = "Menu Item One";
+    private static final long EXPECTED_NEW_VERSION = 1L;
 
     @InjectMocks
     private CreateNewItemOnShelfCommand sut;
@@ -61,7 +62,7 @@ class CreateNewItemOnShelfCommandTest {
                             .hasFieldOrPropertyWithValue("menuItemId", MENU_ITEM_ID_ONE)
                             .hasFieldOrPropertyWithValue("menuItemName", MENU_ITEM_NAME_ONE)
                             .hasFieldOrPropertyWithValue("quantity", 5)
-                            .hasFieldOrPropertyWithValue("version", 0L);
+                            .hasFieldOrPropertyWithValue("version", EXPECTED_NEW_VERSION);
                 })
                 .verifyComplete();
 
@@ -73,7 +74,7 @@ class CreateNewItemOnShelfCommandTest {
                 .hasFieldOrPropertyWithValue("menuItemId", MENU_ITEM_ID_ONE)
                 .hasFieldOrPropertyWithValue("menuItemName", MENU_ITEM_NAME_ONE)
                 .hasFieldOrPropertyWithValue("quantity", 5)
-                .hasFieldOrPropertyWithValue("version", 0L)
+                .hasFieldOrPropertyWithValue("version", EXPECTED_NEW_VERSION)
                 .hasFieldOrPropertyWithValue("updatedAt", LocalDateTime.now(clock));
     }
 
