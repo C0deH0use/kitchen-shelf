@@ -19,7 +19,7 @@ group = "pl.codehouse.restaurant"
 version = "0.0.1-SNAPSHOT"
 val junitVersion = "5.10.2"
 val junitPlatformVersion = "1.10.2"
-val cucumberVersion = "7.15.0"
+val cucumberVersion = "7.20.1"
 
 java {
 	toolchain {
@@ -116,9 +116,9 @@ testing {
                 implementation("org.testcontainers:postgresql")
                 implementation("org.testcontainers:r2dbc")
 
-                implementation("io.rest-assured:rest-assured:5.4.0")
+                implementation("io.rest-assured:rest-assured:5.5.0")
                 implementation("io.rest-assured:json-path:5.5.0")
-                implementation("io.rest-assured:json-schema-validator:5.4.0")
+                implementation("io.rest-assured:json-schema-validator:5.5.0")
                 implementation("io.rest-assured:spring-web-test-client:5.5.0")
             }
         }
