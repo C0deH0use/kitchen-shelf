@@ -57,7 +57,7 @@ dependencies {
 	implementation("com.fasterxml.jackson.core:jackson-core")
 	implementation("com.fasterxml.jackson.core:jackson-annotations")
 
-	implementation("org.apache.commons:commons-lang3:3.14.0")
+	implementation("org.apache.commons:commons-lang3:3.17.0")
 
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 }
