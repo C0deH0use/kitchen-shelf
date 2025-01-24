@@ -37,7 +37,10 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {"spring.cache.type=NONE"}
+)
 @AutoConfigureWebTestClient(timeout = "500000000000")
 @ExtendWith(SpringExtension.class)
 @Import(TestcontainersConfiguration.class)
