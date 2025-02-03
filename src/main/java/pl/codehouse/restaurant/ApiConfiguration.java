@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuration class for base API settings.
+ * This class provides beans for clock, message source, and validator factory.
  */
 @Configuration
 public class ApiConfiguration {
@@ -19,4 +20,5 @@ public class ApiConfiguration {
     public Clock clock() {
         return Clock.systemUTC();
     }
+
 }

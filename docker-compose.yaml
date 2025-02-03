@@ -1,19 +1,25 @@
-version: "3.8"
-
-name: kitchen-shelf-services
+name: kitchen-workers
 
 services:
-  shelf_api:
-    build: .
+  worker:
+    build:
+      context: .
+      args:
+        GITHUB_USER: ${GITHUB_USER}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
     ports:
       - "8080:8080"
     depends_on:
       - shelf_db
       - broker_one
       - broker_two
+    profiles:
+      - shelf
+      - all
 
   shelf_db:
     image: postgres:latest
+    container_name: shelf_db
     ports:
       - "5432:5432"
     environment:
@@ -22,7 +28,7 @@ services:
       POSTGRES_DB: shelf_db
     profiles:
       - db
-      - dependencies
+      - all
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.8.0
@@ -32,9 +38,10 @@ services:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_TICK_TIME: 5000
     profiles:
-      - dependencies
+      - kafka
+      - all
 
   broker_one:
     image: confluentinc/cp-server:7.8.0
@@ -65,7 +72,8 @@ services:
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     profiles:
-      - dependencies
+      - kafka
+      - all
 
   broker_two:
     image: confluentinc/cp-server:7.8.0
@@ -97,7 +105,8 @@ services:
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     profiles:
-      - dependencies
+      - kafka
+      - all
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.8.0
@@ -113,7 +122,8 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker_one:29092'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
     profiles:
-      - dependencies
+      - kafka
+      - all
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:7.8.0
@@ -137,40 +147,4 @@ services:
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
     profiles:
-      - dependencies
-
-  ksqldb-server:
-    image: confluentinc/cp-ksqldb-server:7.8.0
-    hostname: ksqldb-server
-    container_name: ksqldb-server
-    depends_on:
-      - broker_one
-      - broker_two
-    ports:
-      - "8088:8088"
-    environment:
-      KSQL_CONFIG_DIR: "/etc/ksql"
-      KSQL_BOOTSTRAP_SERVERS: "broker_one:29092"
-      KSQL_HOST_NAME: ksqldb-server
-      KSQL_LISTENERS: "http://0.0.0.0:8088"
-      KSQL_CACHE_MAX_BYTES_BUFFERING: 0
-      KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-      KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
-      KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
-      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
-      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
-      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
-    profiles:
-      - dependencies
-
-  ksqldb-cli:
-    image: confluentinc/cp-ksqldb-cli:7.8.0
-    container_name: ksqldb-cli
-    depends_on:
-      - broker_one
-      - broker_two
-      - ksqldb-server
-    entrypoint: /bin/sh
-    tty: true
-    profiles:
-      - dependencies
+      - all

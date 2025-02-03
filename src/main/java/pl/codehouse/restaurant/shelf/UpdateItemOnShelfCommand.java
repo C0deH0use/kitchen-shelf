@@ -9,12 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
-import pl.codehouse.restaurant.Command;
-import pl.codehouse.restaurant.ExecutionResult;
+import pl.codehouse.commons.ActionEvent;
+import pl.codehouse.commons.ApplicableCommand;
+import pl.codehouse.commons.ExecutionResult;
 import reactor.core.publisher.Mono;
 
 @Component
-class UpdateItemOnShelfCommand implements Command<ShelfAction, ShelfDto> {
+class UpdateItemOnShelfCommand implements ApplicableCommand<ActionEvent, ShelfDto> {
     private static final Logger log = LoggerFactory.getLogger(UpdateItemOnShelfCommand.class);
     private static final String ITEMS_BY_MENU_ITEM_ID = "itemsByMenuItemId";
 
@@ -29,14 +30,15 @@ class UpdateItemOnShelfCommand implements Command<ShelfAction, ShelfDto> {
     }
 
     @Override
-    public boolean isApplicable(ShelfAction t) {
+    public boolean isApplicable(ActionEvent t) {
         return t instanceof UpdateItemOnShelfAction;
     }
 
     @Override
-    public Mono<ExecutionResult<ShelfDto>> execute(ShelfAction context) {
+    public Mono<ExecutionResult<ShelfDto>> execute(ActionEvent context) {
         var input = (UpdateItemOnShelfAction) context;
         return repository.findByMenuItemId(input.menuItemId())
+                .switchIfEmpty(Mono.error(new IllegalStateException("Missing Menu item by id %s on shelf".formatted(input.menuItemId()))))
                 .flatMap(validateMenuItemExists(input))
                 .map(entity -> performAction(entity, input))
                 .doOnNext(entity -> log.info("Storing entity after Action >>> {}", entity))

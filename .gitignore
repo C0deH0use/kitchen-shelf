@@ -10,6 +10,8 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+.env
+
 # Package Files #
 *.jar
 *.war
@@ -26,5 +28,7 @@ replay_pid*
 /.aider.tags.cache.v3/
 /.aider.chat.history.md
 /.aider.input.history
+.aider*
 /build/
 !/gradle/wrapper/gradle-wrapper.jar
+.env

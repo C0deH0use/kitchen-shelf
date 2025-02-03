@@ -22,7 +22,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import pl.codehouse.restaurant.ExecutionResult;
+import pl.codehouse.commons.ActionEvent;
+import pl.codehouse.commons.ExecutionResult;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -55,7 +56,7 @@ class UpdateItemOnShelfCommandTest {
     @DisplayName("should add two of a menu item to shelf when Update Action with Add Type is passed")
     void should_AddTwoOfAMenuItemToShelf_When_UpdateActionWithAddTypeIsPassed() {
         // given
-        ShelfAction action = new UpdateItemOnShelfAction(MENU_ITEM_ID_ONE, UpdateType.ADD, 2);
+        ActionEvent action = new UpdateItemOnShelfAction(MENU_ITEM_ID_ONE, UpdateType.ADD, 2);
         ShelfEntity entity = new ShelfEntity(100, MENU_ITEM_NAME_ONE, MENU_ITEM_ID_ONE, 0, 1, LocalDateTime.now(clock).minusDays(1));
         ShelfEntity expectedUpdatedEntity = new ShelfEntity(100, MENU_ITEM_NAME_ONE, MENU_ITEM_ID_ONE, 2, 2, LocalDateTime.now(clock));
         given(repository.findByMenuItemId(MENU_ITEM_ID_ONE)).willReturn(Mono.just(entity));
@@ -94,7 +95,7 @@ class UpdateItemOnShelfCommandTest {
     @DisplayName("should subtract two items from shelf when Update Action with TAKE Type and on shelf are enough items")
     void should_subtractTwoItemsFromShelf_When_UpdateActionWithTAKETypeAndOnShelfAreEnoughItems() {
         // given
-        ShelfAction action = new UpdateItemOnShelfAction(MENU_ITEM_ID_ONE, UpdateType.TAKE, 2);
+        ActionEvent action = new UpdateItemOnShelfAction(MENU_ITEM_ID_ONE, UpdateType.TAKE, 2);
         ShelfEntity entity = new ShelfEntity(100, MENU_ITEM_NAME_ONE, MENU_ITEM_ID_ONE, 10, 1, LocalDateTime.now(clock).minusDays(1));
         ShelfEntity expectedUpdatedEntity = new ShelfEntity(100, MENU_ITEM_NAME_ONE, MENU_ITEM_ID_ONE, 8, 2, LocalDateTime.now(clock));
         given(repository.findByMenuItemId(MENU_ITEM_ID_ONE)).willReturn(Mono.just(entity));
@@ -133,7 +134,7 @@ class UpdateItemOnShelfCommandTest {
     @DisplayName("should fail to subtract two items from shelf when Update Action with TAKE Type and there are not that many items on the shelf")
     void should_failToSubtractTwoItemsFromShelf_When_UpdateActionWithTAKETypeAndThereAreNotThatManyItems() {
         // given
-        ShelfAction action = new UpdateItemOnShelfAction(MENU_ITEM_ID_ONE, UpdateType.TAKE, 2);
+        ActionEvent action = new UpdateItemOnShelfAction(MENU_ITEM_ID_ONE, UpdateType.TAKE, 2);
         ShelfEntity entity = new ShelfEntity(100, MENU_ITEM_NAME_ONE, MENU_ITEM_ID_ONE, 1, 1, LocalDateTime.now(clock).minusDays(1));
         given(repository.findByMenuItemId(MENU_ITEM_ID_ONE)).willReturn(Mono.just(entity));
 

@@ -1,5 +1,6 @@
 package pl.codehouse.restaurant.shelf;
 
+import pl.codehouse.commons.ActionEvent;
 import reactor.core.publisher.Mono;
 
 /**
@@ -13,5 +14,5 @@ public interface ShelfService {
      * @param action by which we do the update.
      * @return ShelfDto after the action is performed.
      */
-    Mono<ShelfDto> action(ShelfAction action);
+    Mono<ShelfDto> action(ActionEvent action);
 }

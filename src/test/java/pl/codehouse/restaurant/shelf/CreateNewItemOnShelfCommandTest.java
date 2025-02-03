@@ -20,7 +20,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pl.codehouse.restaurant.ExecutionResult;
+import pl.codehouse.commons.ActionEvent;
+import pl.codehouse.commons.ExecutionResult;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -29,6 +30,7 @@ class CreateNewItemOnShelfCommandTest {
 
     private static final int MENU_ITEM_ID_ONE = 1000;
     private static final String MENU_ITEM_NAME_ONE = "Menu Item One";
+    private static final long EXPECTED_NEW_VERSION = 1L;
 
     @InjectMocks
     private CreateNewItemOnShelfCommand sut;
@@ -46,7 +48,7 @@ class CreateNewItemOnShelfCommandTest {
     @DisplayName("should create new item on shelf when Create Action is passed and item doesn't exist")
     void should_CreateNewItemOnShelf_When_CreateActionIsPassedAndItemDoesntExist() {
         // given
-        ShelfAction action = new CreateNewItemOnShelfAction(MENU_ITEM_ID_ONE, MENU_ITEM_NAME_ONE, 5);
+        ActionEvent action = new CreateNewItemOnShelfAction(MENU_ITEM_ID_ONE, MENU_ITEM_NAME_ONE, 5);
         given(repository.existsByMenuItemId(MENU_ITEM_ID_ONE)).willReturn(Mono.just(false));
         given(repository.save(any())).willAnswer(invocation -> Mono.just(invocation.getArguments()[0]));
 
@@ -61,7 +63,7 @@ class CreateNewItemOnShelfCommandTest {
                             .hasFieldOrPropertyWithValue("menuItemId", MENU_ITEM_ID_ONE)
                             .hasFieldOrPropertyWithValue("menuItemName", MENU_ITEM_NAME_ONE)
                             .hasFieldOrPropertyWithValue("quantity", 5)
-                            .hasFieldOrPropertyWithValue("version", 0L);
+                            .hasFieldOrPropertyWithValue("version", EXPECTED_NEW_VERSION);
                 })
                 .verifyComplete();
 
@@ -73,7 +75,7 @@ class CreateNewItemOnShelfCommandTest {
                 .hasFieldOrPropertyWithValue("menuItemId", MENU_ITEM_ID_ONE)
                 .hasFieldOrPropertyWithValue("menuItemName", MENU_ITEM_NAME_ONE)
                 .hasFieldOrPropertyWithValue("quantity", 5)
-                .hasFieldOrPropertyWithValue("version", 0L)
+                .hasFieldOrPropertyWithValue("version", EXPECTED_NEW_VERSION)
                 .hasFieldOrPropertyWithValue("updatedAt", LocalDateTime.now(clock));
     }
 
@@ -81,7 +83,7 @@ class CreateNewItemOnShelfCommandTest {
     @DisplayName("should fail to create new item on shelf when Create Action is passed and item already exists")
     void should_FailToCreateNewItemOnShelf_When_CreateActionIsPassedAndItemAlreadyExists() {
         // given
-        ShelfAction action = new CreateNewItemOnShelfAction(MENU_ITEM_ID_ONE, MENU_ITEM_NAME_ONE, 5);
+        ActionEvent action = new CreateNewItemOnShelfAction(MENU_ITEM_ID_ONE, MENU_ITEM_NAME_ONE, 5);
         given(repository.existsByMenuItemId(MENU_ITEM_ID_ONE)).willReturn(Mono.just(true));
 
         // when
