@@ -5,7 +5,7 @@ COPY . .
 
 RUN gradle clean build -x test --no-daemon
 
-FROM azul/zulu-openjdk:21
+FROM azul/zulu-openjdk:23
 
 COPY --from=build-stage /home/gradle/build/libs/shelf-*.jar /shelf.jar
 
