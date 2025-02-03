@@ -19,7 +19,7 @@ group = "pl.codehouse.restaurant"
 version = "0.0.1-SNAPSHOT"
 val junitVersion = "5.11.4"
 val junitPlatformVersion = "1.11.4"
-val cucumberVersion = "7.20.1"
+val cucumberVersion = "7.21.0"
 
 java {
 	toolchain {
