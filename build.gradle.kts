@@ -15,11 +15,14 @@ checkstyle {
 	sourceSets = listOf(project.sourceSets.main.get())
 }
 
+val applicationVersion: String by project
+val junitVersion: String by project
+val junitPlatformVersion: String by project
+val cucumberVersion: String by project
+val burgerCommonsVersion: String by project
+
 group = "pl.codehouse.restaurant"
-version = "0.0.1-SNAPSHOT"
-val junitVersion = "5.11.4"
-val junitPlatformVersion = "1.11.4"
-val cucumberVersion = "7.20.1"
+version = applicationVersion
 
 java {
 	toolchain {
@@ -29,6 +32,13 @@ java {
 
 repositories {
 	mavenCentral()
+	maven {
+		url = uri("https://maven.pkg.github.com/C0deH0use/burger-commons")
+		credentials {
+			username = project.findProperty("github.user") as String? ?: System.getenv("GITHUB_USER")
+			password = project.findProperty("github.token") as String? ?: System.getenv("GITHUB_TOKEN")
+		}
+	}
 }
 
 idea {
@@ -43,6 +53,7 @@ dependencies {
 	runtimeOnly("org.postgresql:r2dbc-postgresql")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
+	implementation("pl.codehouse.commons:burger-commons:$burgerCommonsVersion")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
 	implementation("org.springframework.boot:spring-boot-starter-validation")

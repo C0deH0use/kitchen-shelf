@@ -4,9 +4,12 @@ import static io.restassured.module.webtestclient.RestAssuredWebTestClient.given
 import static io.restassured.module.webtestclient.RestAssuredWebTestClient.webTestClient;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.data.relational.core.query.Criteria.*;
 import static org.springframework.data.relational.core.query.Query.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
@@ -18,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +41,10 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"spring.cache.type=NONE"}
+)
 @AutoConfigureWebTestClient(timeout = "500000000000")
 @ExtendWith(SpringExtension.class)
 @Import(TestcontainersConfiguration.class)
@@ -128,6 +135,39 @@ class ShelfResourceIntegrationTest {
                         .hasFieldOrProperty("updatedAt")
                 )
                 .verifyComplete();
+    }
+
+    @Test
+    void should_return400_When_requestIsInvalid() {
+        String menuItemName = StringUtils.SPACE;
+        int menuItemId = 2;
+        int quantity = 5;
+
+        var newItemRequest = Map.of(
+                "menuItemId", menuItemId,
+                "menuItemName", menuItemName,
+                "quantity", quantity
+        );
+
+        given()
+                .contentType(APPLICATION_PROBLEM_JSON_VALUE)
+                .body(newItemRequest)
+
+                .when()
+                .post("/shelf")
+
+                .then()
+                .log().ifValidationFails()
+                .status(HttpStatus.BAD_REQUEST)
+                .body("instance", equalTo("/shelf"))
+                .body("status", equalTo(BAD_REQUEST.value()))
+                .body("detail", equalTo("Invalid request content."))
+                .body("errors", hasSize(1))
+                .body("errors[0].field", equalTo("menuItemName"))
+                .body("errors[0].rejectedValue", equalTo(StringUtils.SPACE))
+                .body("errors[0].defaultMessage", equalTo("must not be blank"))
+                .body("errors[0].codes", hasItems("NotBlank"))
+        ;
     }
 
     @Test

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,12 +23,21 @@ import reactor.core.publisher.Mono;
  * REST controller for managing shelf operations.
  * This class handles HTTP requests related to shelf items, including fetching, updating, and adding items.
  */
+@Validated
 @RestController
-@RequestMapping(value = "/shelf", consumes = {MediaType.APPLICATION_JSON_VALUE, APPLICATION_PROBLEM_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE, APPLICATION_PROBLEM_JSON_VALUE})
+@RequestMapping(value = "/shelf",
+        consumes = {MediaType.APPLICATION_JSON_VALUE, APPLICATION_PROBLEM_JSON_VALUE},
+        produces = {MediaType.APPLICATION_JSON_VALUE, APPLICATION_PROBLEM_JSON_VALUE})
 class ShelfResource {
     private final ShelfQueryService queryService;
     private final ShelfService shelfService;
 
+    /**
+     * Constructs a new ShelfResource with the given services.
+     *
+     * @param queryService The service for querying shelf items.
+     * @param shelfService The service for performing actions on shelf items.
+     */
     ShelfResource(ShelfQueryService queryService, ShelfService shelfService) {
         this.queryService = queryService;
         this.shelfService = shelfService;
@@ -51,9 +61,7 @@ class ShelfResource {
      */
     @GetMapping("/{menuItemId}")
     Mono<ShelfDto> fetchByMenuItem(@PathVariable
-                                   @Valid
-                                   @Positive(message = "Menu Item Id should be a positive integer value")
-                                   Integer menuItemId) {
+                                   @Positive Integer menuItemId) {
         return queryService.findByMenuItemId(menuItemId);
     }
 
@@ -66,9 +74,7 @@ class ShelfResource {
      */
     @PutMapping("/{menuItemId}")
     Mono<ShelfDto> updateByMenuItem(@PathVariable
-                                    @Valid
-                                    @Positive(message = "Menu Item Id should be a positive integer value")
-                                    Integer menuItemId,
+                                    @Positive Integer menuItemId,
                                     @RequestBody
                                     @NotNull
                                     @Valid UpdateMenuItemOnShelfRequest request) {

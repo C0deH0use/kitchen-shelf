@@ -15,8 +15,8 @@ import org.springframework.cache.annotation.EnableCaching;
 @ConfigurationPropertiesScan
 public class KitchenShelfApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(KitchenShelfApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(KitchenShelfApplication.class, args);
+    }
 
 }

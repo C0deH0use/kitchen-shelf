@@ -2,15 +2,20 @@ package pl.codehouse.restaurant.shelf;
 
 import static io.restassured.module.webtestclient.RestAssuredWebTestClient.given;
 import static io.restassured.module.webtestclient.RestAssuredWebTestClient.webTestClient;
+import static java.util.Locale.ENGLISH;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -31,6 +35,7 @@ class ShelfResourceTest {
 
     private static final int MENU_ITEM_ID = 1000;
     private static final int MENU_ITEM_ID_TWO = 1001;
+
     @MockitoBean
     private ShelfService shelfService;
 
@@ -39,6 +44,7 @@ class ShelfResourceTest {
 
     @BeforeEach
     void setUp(@Autowired WebTestClient webTestClient) {
+        Locale.setDefault(ENGLISH);
         webTestClient(webTestClient);
     }
 
@@ -64,7 +70,7 @@ class ShelfResourceTest {
 
                     .then()
                     .log().ifValidationFails()
-                    .status(HttpStatus.OK)
+                    .status(OK)
                     .body("$", Matchers.hasSize(2))
                     .body("$.menuItemName", notNullValue())
                     .body("$.menuItemId", notNullValue())
@@ -92,7 +98,7 @@ class ShelfResourceTest {
 
                     .then()
                     .log().ifValidationFails()
-                    .status(HttpStatus.OK)
+                    .status(OK)
                     .body("menuItemName", notNullValue())
                     .body("menuItemId", notNullValue())
                     .body("quantity", notNullValue())
@@ -113,11 +119,16 @@ class ShelfResourceTest {
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf/-1000"))
+                    .body("title", equalTo( "Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("instance", equalTo("/shelf/-1000"))
+                    .body("errors", hasSize(1))
+                    .body("errors[0].field", equalTo("fetchByMenuItem.menuItemId"))
+                    .body("errors[0].objectName", equalTo("fetchByMenuItem.menuItemId"))
+                    .body("errors[0].rejectedValue", equalTo(-1000))
+                    .body("errors[0].defaultMessage", equalTo("must be greater than 0"))
+                    .body("errors[0].codes", hasItems("{jakarta.validation.constraints.Positive.message}"))
+                    ;
         }
 
         @Test
@@ -134,11 +145,11 @@ class ShelfResourceTest {
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf/abc"))
+                    .body("title", equalTo("Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("detail", equalTo("Type mismatch."))
+                    .body("instance", equalTo("/shelf/abc"))
+            ;
         }
     }
 
@@ -149,7 +160,10 @@ class ShelfResourceTest {
         @DisplayName("should successfully update a menu item on the shelf")
         void Should_SuccessfullyUpdateMenuItemOnShelf() {
             // given
-            UpdateMenuItemOnShelfRequest request = new UpdateMenuItemOnShelfRequest(UpdateType.ADD, 5);
+            Map<String, Object> requestBody = Map.of(
+                    "updateType", UpdateType.ADD.name(),
+                    "quantity", 5
+            );
             UpdateItemOnShelfAction action = new UpdateItemOnShelfAction(MENU_ITEM_ID, UpdateType.ADD, 5);
             ShelfDto expectedShelfDto = new ShelfDto("Updated Item", MENU_ITEM_ID, 10, 2);
             given(shelfService.action(action)).willReturn(Mono.just(expectedShelfDto));
@@ -157,14 +171,14 @@ class ShelfResourceTest {
             given()
                     .log().ifValidationFails()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(request)
+                    .body(requestBody)
 
                     .when()
-                    .put("/shelf/{menuItemId}", MENU_ITEM_ID)
+                    .put("/shelf/1000")
 
                     .then()
                     .log().ifValidationFails()
-                    .status(HttpStatus.OK)
+                    .status(OK)
                     .body("menuItemName", equalTo("Updated Item"))
                     .body("menuItemId", equalTo(MENU_ITEM_ID))
                     .body("quantity", equalTo(10))
@@ -186,16 +200,16 @@ class ShelfResourceTest {
                     .body(requestBody)
 
                     .when()
-                    .put("/shelf/{menuItemId}", MENU_ITEM_ID)
+                    .put("/shelf/{menuItemId}", Integer.toString(MENU_ITEM_ID))
 
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf/" + MENU_ITEM_ID))
+                    .body("title", equalTo("Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("instance", equalTo("/shelf/1000"))
+                    .body("detail", equalTo("Failed to read HTTP message"))
+            ;
         }
 
         @Test
@@ -212,16 +226,20 @@ class ShelfResourceTest {
                     .body(requestBody)
 
                     .when()
-                    .put("/shelf/{menuItemId}", MENU_ITEM_ID)
+                    .put("/shelf/{menuItemId}", Integer.toString(MENU_ITEM_ID))
 
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf/" + MENU_ITEM_ID))
+                    .body("title", equalTo("Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("errors", hasSize(1))
+                    .body("errors[0].field", equalTo("updateType"))
+                    .body("errors[0].rejectedValue", equalTo(null))
+                    .body("errors[0].defaultMessage", equalTo("must not be null"))
+                    .body("errors[0].codes", hasItems("NotNull", "NotNull.updateType"))
+
+            ;
         }
 
         @Test
@@ -238,16 +256,19 @@ class ShelfResourceTest {
                     .body(requestBody)
 
                     .when()
-                    .put("/shelf/{menuItemId}", MENU_ITEM_ID)
+                    .put("/shelf/{menuItemId}", Integer.toString(MENU_ITEM_ID))
 
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf/" + MENU_ITEM_ID))
+                    .body("title", equalTo("Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("errors", hasSize(1))
+                    .body("errors[0].field", equalTo("quantity"))
+                    .body("errors[0].rejectedValue", equalTo(0))
+                    .body("errors[0].defaultMessage", equalTo("must be greater than or equal to 1"))
+                    .body("errors[0].codes", hasItems("Min", "Min.int", "Min.quantity"))
+            ;
         }
 
         @Test
@@ -265,16 +286,19 @@ class ShelfResourceTest {
                     .body(requestBody)
 
                     .when()
-                    .put("/shelf/{menuItemId}", "-1")
+                    .put("/shelf/-1")
 
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf/-1"))
+                    .body("title", equalTo("Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("errors", hasSize(1))
+                    .body("errors[0].field", equalTo("updateByMenuItem.menuItemId"))
+                    .body("errors[0].rejectedValue", equalTo(-1))
+                    .body("errors[0].defaultMessage", equalTo("must be greater than 0"))
+                    .body("errors[0].codes", hasItems("{jakarta.validation.constraints.Positive.message}"))
+            ;
         }
     }
 
@@ -285,21 +309,26 @@ class ShelfResourceTest {
         @DisplayName("should successfully add a new item to the shelf")
         void Should_SuccessfullyAddNewItemToShelf() {
             // given
-            CreateNewItemOnShelfAction action = new CreateNewItemOnShelfAction(1, "New Item", 5);
+            Map<String, Object> requestBody = Map.of(
+                    "menuItemId", 1,
+                    "menuItemName", "New Item",
+                    "quantity", 5
+            );
             ShelfDto expectedShelfDto = new ShelfDto("New Item", 1, 5, 1);
+            CreateNewItemOnShelfAction action = new CreateNewItemOnShelfAction(1, "New Item", 5);
             given(shelfService.action(action)).willReturn(Mono.just(expectedShelfDto));
 
             given()
                     .log().ifValidationFails()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(action)
+                    .body(requestBody)
 
                     .when()
                     .post("/shelf")
 
                     .then()
                     .log().ifValidationFails()
-                    .status(HttpStatus.OK)
+                    .status(CREATED)
                     .body("menuItemName", equalTo("New Item"))
                     .body("menuItemId", equalTo(1))
                     .body("quantity", equalTo(5))
@@ -307,15 +336,19 @@ class ShelfResourceTest {
         }
 
         @Test
-        @DisplayName("should return 400 when adding a new item with invalid menu item id")
-        void Should_Return400_When_AddingNewItemWithInvalidMenuItemId() {
+        @DisplayName("should return 400 with detailed error when adding a new item with invalid menu item id")
+        void Should_Return400WithDetailedError_When_AddingNewItemWithInvalidMenuItemId() {
             // given
-            CreateNewItemOnShelfAction action = new CreateNewItemOnShelfAction(-1, "Invalid Item", 5);
+            Map<String, Object> requestBody = Map.of(
+                    "menuItemId", -1,
+                    "menuItemName", "Invalid Item",
+                    "quantity", 5
+            );
 
             given()
                     .log().ifValidationFails()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(action)
+                    .body(requestBody)
 
                     .when()
                     .post("/shelf")
@@ -323,23 +356,30 @@ class ShelfResourceTest {
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf"))
+                    .body("title", equalTo("Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("errors", hasSize(1))
+                    .body("errors[0].field", equalTo("menuItemId"))
+                    .body("errors[0].rejectedValue", equalTo(-1))
+                    .body("errors[0].defaultMessage", equalTo("must be greater than or equal to 1"))
+                    .body("errors[0].codes", hasItems("Min.int", "Min"))
+            ;
         }
 
         @Test
         @DisplayName("should return 400 when adding a new item with blank menu item name")
         void Should_Return400_When_AddingNewItemWithBlankMenuItemName() {
             // given
-            CreateNewItemOnShelfAction action = new CreateNewItemOnShelfAction(1, "", 5);
+            Map<String, Object> requestBody = Map.of(
+                    "menuItemId", 1,
+                    "menuItemName", StringUtils.EMPTY,
+                    "quantity", 5
+            );
 
             given()
                     .log().ifValidationFails()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(action)
+                    .body(requestBody)
 
                     .when()
                     .post("/shelf")
@@ -347,23 +387,30 @@ class ShelfResourceTest {
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf"))
+                    .body("title", equalTo("Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("errors", hasSize(1))
+                    .body("errors[0].field", equalTo("menuItemName"))
+                    .body("errors[0].rejectedValue", equalTo(StringUtils.EMPTY))
+                    .body("errors[0].defaultMessage", equalTo("must not be blank"))
+                    .body("errors[0].codes", hasItems("NotBlank"))
+            ;
         }
 
         @Test
         @DisplayName("should return 400 when adding a new item with invalid quantity")
         void Should_Return400_When_AddingNewItemWithInvalidQuantity() {
             // given
-            CreateNewItemOnShelfAction action = new CreateNewItemOnShelfAction(1, "Invalid Quantity Item", 0);
+            Map<String, Object> requestBody = Map.of(
+                    "menuItemId", 1,
+                    "menuItemName", "Invalid Quantity Item",
+                    "quantity", 0
+            );
 
             given()
                     .log().ifValidationFails()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(action)
+                    .body(requestBody)
 
                     .when()
                     .post("/shelf")
@@ -371,11 +418,13 @@ class ShelfResourceTest {
                     .then()
                     .log().ifValidationFails()
                     .status(BAD_REQUEST)
-                    .body("timestamp", notNullValue(LocalDateTime.class))
-                    .body("requestId", notNullValue(String.class))
-                    .body("path", equalTo("/shelf"))
+                    .body("title", equalTo("Bad Request"))
                     .body("status", equalTo(BAD_REQUEST.value()))
-                    .body("error", hasSize(1));
+                    .body("errors", hasSize(1))
+                    .body("errors[0].field", equalTo("quantity"))
+                    .body("errors[0].rejectedValue", equalTo(0))
+                    .body("errors[0].defaultMessage", equalTo("must be greater than or equal to 1"))
+                    .body("errors[0].codes", hasItems("Min.quantity", "Min"));
         }
     }
 }

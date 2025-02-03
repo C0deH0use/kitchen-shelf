@@ -2,17 +2,18 @@ package pl.codehouse.restaurant.shelf;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import pl.codehouse.restaurant.Command;
-import pl.codehouse.restaurant.ExecutionResult;
+import pl.codehouse.commons.ActionEvent;
+import pl.codehouse.commons.ApplicableCommand;
+import pl.codehouse.commons.Command;
+import pl.codehouse.commons.ExecutionResult;
 import reactor.core.publisher.Mono;
 
 @Component
-class CreateNewItemOnShelfCommand implements Command<ShelfAction, ShelfDto> {
+class CreateNewItemOnShelfCommand implements ApplicableCommand<ActionEvent, ShelfDto> {
     private static final Logger log = LoggerFactory.getLogger(CreateNewItemOnShelfCommand.class);
     private static final int NEW_VERSION = 1;
 
@@ -25,12 +26,12 @@ class CreateNewItemOnShelfCommand implements Command<ShelfAction, ShelfDto> {
     }
 
     @Override
-    public boolean isApplicable(ShelfAction t) {
+    public boolean isApplicable(ActionEvent t) {
         return t instanceof CreateNewItemOnShelfAction;
     }
 
     @Override
-    public Mono<ExecutionResult<ShelfDto>> execute(ShelfAction context) {
+    public Mono<ExecutionResult<ShelfDto>> execute(ActionEvent context) {
         var input = (CreateNewItemOnShelfAction) context;
         return repository.existsByMenuItemId(input.menuItemId())
                 .flatMap(handleIfMenuItemExists(input))
