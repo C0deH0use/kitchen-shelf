@@ -10,7 +10,7 @@ RUN gradle clean build -x test -x integrationTest --no-daemon -Pgithub.user=${GI
 
 FROM azul/zulu-openjdk:21
 
-COPY --from=build-stage /home/gradle/build/libs/shelf-*.jar /shelf.jar
+COPY --from=build-stage /home/gradle/build/libs/kitchen-shelf-*.jar /shelf.jar
 
 
 ENTRYPOINT ["java","-jar", "/shelf.jar" ]
