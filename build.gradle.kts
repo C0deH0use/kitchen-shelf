@@ -97,10 +97,10 @@ testing {
                 implementation("io.cucumber:cucumber-spring:$cucumberVersion")
                 implementation("io.cucumber:cucumber-junit-platform-engine:$cucumberVersion")
 
-				implementation("io.rest-assured:rest-assured:5.4.0")
-				implementation("io.rest-assured:json-path:5.4.0")
-				implementation("io.rest-assured:json-schema-validator:5.4.0")
-				implementation("io.rest-assured:spring-web-test-client:5.4.0")
+				implementation("io.rest-assured:rest-assured:5.5.1")
+				implementation("io.rest-assured:json-path:5.5.1")
+				implementation("io.rest-assured:json-schema-validator:5.5.1")
+				implementation("io.rest-assured:spring-web-test-client:5.5.1")
 
                 runtimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
             }
@@ -132,10 +132,10 @@ testing {
                 implementation("org.testcontainers:postgresql")
                 implementation("org.testcontainers:r2dbc")
 
-                implementation("io.rest-assured:rest-assured:5.5.0")
-                implementation("io.rest-assured:json-path:5.5.0")
-                implementation("io.rest-assured:json-schema-validator:5.5.0")
-                implementation("io.rest-assured:spring-web-test-client:5.5.0")
+                implementation("io.rest-assured:rest-assured:5.5.1")
+                implementation("io.rest-assured:json-path:5.5.1")
+                implementation("io.rest-assured:json-schema-validator:5.5.1")
+                implementation("io.rest-assured:spring-web-test-client:5.5.1")
             }
         }
     }
