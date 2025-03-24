@@ -8,7 +8,7 @@ COPY . .
 
 RUN gradle clean build -x test -x integrationTest --no-daemon -Pgithub.user=${GITHUB_USER} -Pgithub.token=${GITHUB_TOKEN}
 
-FROM azul/zulu-openjdk:21
+FROM azul/zulu-openjdk:24
 
 COPY --from=build-stage /home/gradle/build/libs/kitchen-shelf-*.jar /shelf.jar
 
